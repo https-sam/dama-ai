@@ -1,0 +1,9 @@
+<div class="board">
+  <div class="row" *ngFor="let row of board; let y = index">
+    <app-piece *ngFor="let piece of row; let x = index"
+               [color]="piece?.color"
+               [king]="piece?.king"
+               [position]="piece?.position">
+    </app-piece>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+.piece {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+
+  &.yellow-piece {
+    background-color: yellow;
+  }
+
+  &.black-piece {
+    background-color: black;
+    color: white;
+  }
+
+
+  &.king {
+    //TODO: Add a crown instead
+    border: 2px solid gold;
+  }
+}

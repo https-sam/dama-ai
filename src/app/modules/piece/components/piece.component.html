@@ -1,0 +1,8 @@
+<div class="piece"
+     [ngClass]="{
+      'yellow-piece': color === PieceColorEnum.YELLOW,
+      'black-piece': color === PieceColorEnum.BLACK,
+      'king': king
+      }">
+  <span *ngIf="king">K</span>
+</div>
