@@ -21,7 +21,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   constructor(
     private _gameService: GameService
-  ) {}
+  ) { }
 
 
   public ngOnDestroy() {
