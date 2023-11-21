@@ -1,23 +1,33 @@
 .piece {
+  cursor: pointer;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
-  width: 100%;
-  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
 
   &.yellow-piece {
-    background-color: yellow;
+    background-color: rgba(255, 215, 0, 0.7);
+    border: 1px solid rgba(255, 215, 0, 1);
   }
 
   &.black-piece {
-    background-color: black;
-    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(0, 0, 0, 1);
   }
 
 
   &.king {
     //TODO: Add a crown instead
-    border: 2px solid gold;
+    font-size: 24px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   }
+}
+
+.none {
+  display: none;
 }

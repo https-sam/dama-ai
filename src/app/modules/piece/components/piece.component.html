@@ -2,6 +2,7 @@
      [ngClass]="{
       'yellow-piece': color === PieceColorEnum.YELLOW,
       'black-piece': color === PieceColorEnum.BLACK,
+      'none': color === PieceColorEnum.NONE,
       'king': king
       }">
   <span *ngIf="king">K</span>

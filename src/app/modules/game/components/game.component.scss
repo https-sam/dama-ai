@@ -2,8 +2,8 @@
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
-  max-width: 800px;
-  margin: auto;
+  min-width: 800px;
+  min-height: 800px;
 }
 
 .row {
