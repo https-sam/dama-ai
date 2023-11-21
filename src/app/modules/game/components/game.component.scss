@@ -16,6 +16,9 @@ app-piece {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-image: url('/assets/images/wood.png'); /* Adds the wood texture as the background */
+  background-size: cover; /* Ensures the image covers the entire element */
+  background-repeat: no-repeat; /* Prevents the image from repeating */
 }
 
 app-piece:nth-child(odd) {
