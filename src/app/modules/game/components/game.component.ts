@@ -1,24 +1,37 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Piece } from '../../piece/helperClasses/Piece';
 import { PiecePosition } from '../../piece/helperClasses/PiecePosition';
 import { PieceColorEnum } from '../../piece/enum/PieceColorEnum';
+import { GameService } from '../services/game.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-game',
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss']
 })
-export class GameComponent implements OnInit {
-  public INITIAL_FEN: string = '8/yyyyyyyy/yyyyyyyy/8/8/bbbbbbbb/bbbbbbbb/8';
+export class GameComponent implements OnInit, OnDestroy {
   public board: Piece[][] = [];
   private _numYellow: number = 0;
   private _numBlack: number = 0;
   private _numShaikhYellow: number = 0;
   private _numShaikhBlack: number = 0;
+  private _subscription: Subscription | undefined = undefined;
 
 
-  public ngOnInit() {
-    this._parseFEN(this.INITIAL_FEN);
+  constructor(
+    private _gameService: GameService
+  ) {}
+
+
+  public ngOnDestroy() {
+    this._subscription?.unsubscribe();
+  }
+
+  public ngOnInit(): void {
+    this._subscription = this._gameService.piecesPositionsFEN$.subscribe((fen: string): void => {
+      this._parseFEN(fen);
+    });
   }
 
 
