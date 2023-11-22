@@ -12,7 +12,6 @@
 
 app-piece {
   flex: 1;
-  height: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -35,4 +34,12 @@ app-piece:nth-child(even) {
 
 .row:nth-child(even) app-piece:nth-child(even), .row:nth-child(odd) app-piece:nth-child(odd) {
   background-color: #b58863;
+}
+
+
+.row:nth-child(even) app-piece:nth-child(odd).possibleMove,
+.row:nth-child(odd) app-piece:nth-child(even).possibleMove,
+.row:nth-child(even) app-piece:nth-child(even).possibleMove,
+.row:nth-child(odd) app-piece:nth-child(odd).possibleMove {
+  background-color: rgba(85, 171, 0, 0.7);
 }
