@@ -1,4 +1,5 @@
 .board {
+  background-color: #efefef;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
@@ -15,7 +16,7 @@ app-piece {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url('/assets/images/wood.png');
+  //background-image: url('/assets/images/wood.png');
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -41,5 +42,11 @@ app-piece:nth-child(even) {
 .row:nth-child(odd) app-piece:nth-child(even).possibleMove,
 .row:nth-child(even) app-piece:nth-child(even).possibleMove,
 .row:nth-child(odd) app-piece:nth-child(odd).possibleMove {
-  background-color: rgba(85, 171, 0, 0.7);
+  background-color: rgba(144, 238, 144, 0.68);
+  box-shadow: 0 0 8px rgba(44, 220, 124, 0.71);
+
+  &:hover {
+    border: 2px solid rgba(60, 179, 113, 0.7);
+  }
+  cursor: pointer;
 }
