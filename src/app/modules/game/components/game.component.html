@@ -1,13 +1,11 @@
 <div class="board">
   <div class="row" *ngFor="let row of board | async; let y = index">
     <app-piece *ngFor="let piece of row; let x = index"
-               (click)="displayPossibleMoves(piece)"
+               (click)="handleClick(piece, x, y)"
                [color]="piece?.color"
                [king]="piece?.king"
                [position]="piece?.position"
-               [ngClass]="{
-                  'possibleMove': isPossibleMove(x, y),
-                }">
+               [ngClass]="{'possibleMove': (x | isPossibleMovePipe : y : possiblePositions)}">
     </app-piece>
   </div>
 </div>

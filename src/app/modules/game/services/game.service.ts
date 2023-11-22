@@ -42,31 +42,31 @@ export class GameService {
         board[p.position.y][p.position.x].color = PieceColorEnum.NONE;
         board[p.position.y][p.position.x].king = false;
       }
+    }
+
+    p.position = move.positions[move.positions.length -1];
+
+    // promotion
+    if(!p.king && (p.position.y == 0 || p.position.y == 7)){ // might need to check color too
+      p.king = true;
+    }
+
+    board[p.position.y][p.position.x] = p;
+
+    const fenForThisTurn = this._generateFen(board);
+    this.setPiecesPositionsFEN(fenForThisTurn);
+    this.nextTurn();
   }
 
-  p.position = move.positions[move.positions.length -1];
-
-  // promotion
-  if(!p.king && (p.position.y == 0 || p.position.y == 7)){ // might need to check color too
-    p.king = true;
-  }
-
-  board[p.position.y][p.position.x] = p;
-
-  const fenForThisTurn = this._generateFen(board);
-  this.setPiecesPositionsFEN(fenForThisTurn);
-  this._nextTurn();
-}
-
-  private _nextTurn(): void {
+  public nextTurn(): void {
     this._moveCacheMap.clear();
 
     this._turn = this._turn === PieceColorEnum.BLACK ? PieceColorEnum.YELLOW : PieceColorEnum.BLACK;
     this._possible_moves = this._generatePossibleMoves();
 
-    for(const move of this._possible_moves) {
+    for (const move of this._possible_moves) {
       const key: string = `${move.positions[0].x}${move.positions[0].y}`;
-      if(!(this._moveCacheMap.has(key))) this._moveCacheMap.set(key, []);
+      if (!this._moveCacheMap.has(key)) this._moveCacheMap.set(key, []);
       this._moveCacheMap.set(key, [...this._moveCacheMap.get(key), move]);
     }
   }
@@ -409,7 +409,6 @@ export class GameService {
   public getPossibleMovesOf(p: Piece): Move[] {
     const key: string = `${p.position.x}${p.position.y}`;
     if(!this._moveCacheMap.has(key)) return [];
-    console.log(this._moveCacheMap.get(key))
     return this._moveCacheMap.get(key);
   }
 

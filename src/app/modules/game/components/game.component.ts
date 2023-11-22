@@ -3,9 +3,10 @@ import { Piece } from '../../piece/helperClasses/Piece';
 import { PiecePosition } from '../../piece/helperClasses/PiecePosition';
 import { PieceColorEnum } from '../../piece/enum/PieceColorEnum';
 import { GameService } from '../services/game.service';
-import { async, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Move } from '../../piece/helperClasses/Move';
 import { Board } from '../types/board';
+
 
 @Component({
   selector: 'app-game',
@@ -21,6 +22,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   public currentBoard: Board = null;
   public highlightedPieces: Move[] = [];
+  public possiblePositions: Set<string> = new Set();
 
 
 
@@ -34,15 +36,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   public isPossibleMove(x: number, y: number): boolean {
-    return this.highlightedPieces.some(
-      (move: Move): boolean => {
-        for(let i = 1; i < move.positions.length; i++) {
-          if(move.positions[i].x === x && move.positions[i].y === y) {
-            return true;
-          }
-        }
-      }
-    );
+    return this.possiblePositions.has(`${x},${y}`);
   }
 
   public ngOnDestroy(): void {
@@ -53,11 +47,39 @@ export class GameComponent implements OnInit, OnDestroy {
     this._subscription = this._gameService.piecesPositionsFEN$.subscribe((fen: string): void => {
       this._parseFEN(fen);
     });
+    this._gameService.nextTurn();
   }
 
   public displayPossibleMoves(piece: Piece): void {
     this.highlightedPieces = this._gameService.getPossibleMovesOf(piece);
+    let newPositions: Set<string> = new Set<string>();
+
+    this.highlightedPieces.forEach((move: Move): void => {
+      for (let i = 1; i < move.positions.length; i++) {
+        const pos: PiecePosition = move.positions[i];
+        newPositions.add(`${pos.x},${pos.y}`);
+      }
+    });
+
+    // Assign a new set to trigger change detection
+    this.possiblePositions = newPositions;
   }
+
+
+
+  public handleClick(piece: Piece, x: number, y: number): void {
+    if (this.isPossibleMove(x, y)) {
+      const selectedMove = this.highlightedPieces.find(move =>
+        move.positions.some(pos => pos.x === x && pos.y === y));
+
+      if (selectedMove) {
+        this._gameService.play(selectedMove); // Execute the move
+      }
+    } else {
+      this.displayPossibleMoves(piece); // Display possible moves for the selected piece
+    }
+  }
+
 
 
   private _parseFEN(fen: string): void {
@@ -107,3 +129,4 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
 }
+
