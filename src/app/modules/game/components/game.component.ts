@@ -47,7 +47,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this._subscription = this._gameService.piecesPositionsFEN$.subscribe((fen: string): void => {
       this._parseFEN(fen);
     });
-    this._gameService.nextTurn();
+    this._gameService.init();
   }
 
   public displayPossibleMoves(piece: Piece): void {
@@ -74,6 +74,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
       if (selectedMove) {
         this._gameService.play(selectedMove); // Execute the move
+        console.log("played");
+        this.possiblePositions.clear();
       }
     } else {
       this.displayPossibleMoves(piece); // Display possible moves for the selected piece

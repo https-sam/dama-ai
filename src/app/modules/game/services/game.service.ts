@@ -1,12 +1,12 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { gameConfig } from '../game-config';
-import { Piece } from '../../piece/helperClasses/Piece';
-import { Move } from '../../piece/helperClasses/Move';
-import { PieceColorEnum } from '../../piece/enum/PieceColorEnum';
-import { DirectionsEnum } from '../../piece/enum/DirectionsEnum';
-import { PiecePosition } from '../../piece/helperClasses/PiecePosition';
-import { Board } from '../types/board';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {gameConfig} from '../game-config';
+import {Piece} from '../../piece/helperClasses/Piece';
+import {Move} from '../../piece/helperClasses/Move';
+import {PieceColorEnum} from '../../piece/enum/PieceColorEnum';
+import {DirectionsEnum} from '../../piece/enum/DirectionsEnum';
+import {PiecePosition} from '../../piece/helperClasses/PiecePosition';
+import {Board} from '../types/board';
 
 
 @Injectable({
@@ -30,10 +30,24 @@ export class GameService {
     this._preComputeBoardBlocks();
   }
 
-  public play(move: Move): void {
-    const board: Board = [...this._board.value];
+  public init(): void {
+    this._possible_moves = this._generatePossibleMoves();
 
-    const p = board[move.positions[0].y][move.positions[0].x];
+    for (const move of this._possible_moves) {
+      const key: string = `${move.positions[0].x},${move.positions[0].y}`;
+      if (!this._moveCacheMap.has(key)) this._moveCacheMap.set(key, []);
+      this._moveCacheMap.set(key, [...this._moveCacheMap.get(key), move]);
+    }
+  }
+
+  public play(move: Move): void {
+    // const board: Board = [...this._board.value];
+    const board: Board = JSON.parse(JSON.stringify(this._board.value));
+
+    const OLD = board[move.positions[0].y][move.positions[0].x];
+
+    const p: Piece = new Piece(move.positions[move.positions.length -1], OLD.color, OLD.king)
+
     board[move.positions[0].y][move.positions[0].x].color = PieceColorEnum.NONE;
     board[move.positions[0].y][move.positions[0].x].king = false;
 
@@ -44,7 +58,7 @@ export class GameService {
       }
     }
 
-    p.position = move.positions[move.positions.length -1];
+    // p.position = move.positions[move.positions.length -1];
 
     // promotion
     if(!p.king && (p.position.y == 0 || p.position.y == 7)){ // might need to check color too
@@ -55,6 +69,7 @@ export class GameService {
 
     const fenForThisTurn = this._generateFen(board);
     this.setPiecesPositionsFEN(fenForThisTurn);
+    this.updateBoard(board);
     this.nextTurn();
   }
 
@@ -65,7 +80,7 @@ export class GameService {
     this._possible_moves = this._generatePossibleMoves();
 
     for (const move of this._possible_moves) {
-      const key: string = `${move.positions[0].x}${move.positions[0].y}`;
+      const key: string = `${move.positions[0].x},${move.positions[0].y}`;
       if (!this._moveCacheMap.has(key)) this._moveCacheMap.set(key, []);
       this._moveCacheMap.set(key, [...this._moveCacheMap.get(key), move]);
     }
@@ -112,11 +127,12 @@ export class GameService {
 
   private _generatePossibleMoves(): Move[] {
     let moves: Move[] = [];
+    const board: Board = JSON.parse(JSON.stringify(this._board.value))
 
-    for(const row of this._board.value){
+    for(const row of board){
       for(const p of row) {
         if(p.color === this._turn){
-            const moves2: Move[] = p.king ? this._generatePossibleKingMoves(p, this._board.value) : this._generatePossiblePawnMoves(p, this._board.value);
+            const moves2: Move[] = p.king ? this._generatePossibleKingMoves(p, board) : this._generatePossiblePawnMoves(p, board);
             moves.push(...moves2);
         }
       }
@@ -155,18 +171,23 @@ export class GameService {
 
 
   private _makeSingleMove(p: Piece, eaten: Piece, pos: PiecePosition): Board {
-    const board: Board = [...this._board.value];
+    // const board: Board = [...this._board.value];
+    const board: Board = JSON.parse(JSON.stringify(this._board.value))
 
-    board[eaten.position.y][eaten.position.x] = null;
-    board[p.position.y][p.position.x] = null;
-    board[pos.y][pos.x] = p;
-    p.position = pos;
+    const NEW_PIECE = new Piece(pos, p.color, p.king);
+
+    board[eaten.position.y][eaten.position.x].color = PieceColorEnum.NONE;
+    board[p.position.y][p.position.x].color = PieceColorEnum.NONE;
+    board[pos.y][pos.x] = NEW_PIECE;
+    // p.position = pos;
+
+    console.log(board)
 
     return board;
   }
 
 
-  private _generatePossiblePawnMoves(p: Piece, _board: Board, eating: boolean = false): Move[] {
+  private _generatePossiblePawnMoves(p: Piece, board: Board, eating: boolean = false): Move[] {
     const moves: Move[] = [];
 
     for (const direction of this._directions) {
@@ -194,18 +215,17 @@ export class GameService {
           break;
       }
 
-      if (this._board.value[y][x].color === PieceColorEnum.NONE && !eating) {
+      if (board[y][x].color === PieceColorEnum.NONE && !eating) {
         moves.push(new Move([p.position, new PiecePosition(x, y)]))
       } else {
-        const pos: PiecePosition | null = this._canPawnEat(p, this._board.value[y][x]);
+        const pos: PiecePosition | null = this._canPawnEat(p, board[y][x], board);
 
         if (pos != null) {
 
           const move: Move = new Move([p.position, pos], true);
-          move.eaten.push(this._board.value[y][x]);
+          move.eaten.push(new Piece(board[y][x].position, board[y][x].color, board[y][x].king));
 
-          const eaten: Piece = this._board.value[y][x]
-          const oldPos: PiecePosition = p.position;
+          const eaten: Piece = new Piece(board[y][x].position, board[y][x].color, board[y][x].king);
 
           const new_board: Board = this._makeSingleMove(p, eaten, pos);
           const moves2: Move[] = this._generatePossiblePawnMoves(p, new_board, true);
@@ -272,17 +292,17 @@ export class GameService {
             break;
         }
 
-        if (this._board.value[y][x].color === PieceColorEnum.NONE && !eating) {
+        if (board[y][x].color === PieceColorEnum.NONE && !eating) {
           moves.push(new Move([p.position, new PiecePosition(x, y)]));
-        } else if(this._board.value[y][x].color != p.color) {
+        } else if(board[y][x].color != p.color) {
           if (x2 < 0 || x2 >= gameConfig.boardWidth || y2 < 0 || y2 >= gameConfig.boardHeight) continue;
-          if (this._board.value[y2][x2].color != PieceColorEnum.NONE) continue;
+          if (board[y2][x2].color != PieceColorEnum.NONE) continue;
 
-          const positions: PiecePosition[] = this._canKingEat(p, this._board.value[y][x]);
+          const positions: PiecePosition[] = this._canKingEat(p, board[y][x], board);
 
           for(const pos of positions){
             const oldPos: PiecePosition = p.position;
-            const eaten: Piece = this._board.value[y][x];
+            const eaten: Piece = board[y][x];
             const move: Move = new Move([p.position, pos], true);
 
             move.eaten.push(eaten);
@@ -313,7 +333,7 @@ export class GameService {
   }
 
 
-  private _canPawnEat(p1: Piece, p2: Piece): PiecePosition | null {
+  private _canPawnEat(p1: Piece, p2: Piece, board: Board): PiecePosition | null {
     if ((p2.position.x != p1.position.x && p2.position.y != p1.position.y) || p1.color === p2.color)
       return null;
 
@@ -329,18 +349,18 @@ export class GameService {
     if (p2.position.x === p1.position.x) {
       if (p2.position.y === 0 || p2.position.y === 7) return null;
 
-      if (this._board.value[p2.position.y + result][p2.position.x].color === PieceColorEnum.NONE) {
+      if (board[p2.position.y + result][p2.position.x].color === PieceColorEnum.NONE) {
         return new PiecePosition(p2.position.x, p2.position.y + result);
       }
     } else {
       // check both left and right
       if (p2.position.x === 0 || p2.position.x === 7) return null;
 
-      if (this._board.value[p2.position.y][p2.position.x + 1].color === PieceColorEnum.NONE) { // right
+      if (board[p2.position.y][p2.position.x + 1].color === PieceColorEnum.NONE) { // right
         return new PiecePosition(p2.position.x + 1, p2.position.y);
       }
 
-      if (this._board.value[p2.position.y][p2.position.x - 1].color === PieceColorEnum.NONE) { // left
+      if (board[p2.position.y][p2.position.x - 1].color === PieceColorEnum.NONE) { // left
         return new PiecePosition(p2.position.x - 1, p2.position.y);
       }
     }
@@ -348,7 +368,7 @@ export class GameService {
     return null;
   }
 
-  private _canKingEat(p1: Piece, p2: Piece): PiecePosition[] {
+  private _canKingEat(p1: Piece, p2: Piece, board: Board): PiecePosition[] {
     if ((p2.position.x !== p1.position.x && p2.position.y !== p1.position.y) || p1.color === p2.color)
       return [];
 
@@ -360,17 +380,17 @@ export class GameService {
       const dir: number = p2.position.y - p1.position.y > 0 ? 1 : -1;
 
       for(let i = 1; i < dist; ++i){
-        if(this._board.value[p1.position.y + i * dir][p1.position.x].color != PieceColorEnum.NONE) {
+        if(board[p1.position.y + i * dir][p1.position.x].color != PieceColorEnum.NONE) {
           return [];
         }
       }
 
-      if(this._board.value[p2.position.y + dir][p2.position.x].color != PieceColorEnum.NONE) return [];
+      if(board[p2.position.y + dir][p2.position.x].color != PieceColorEnum.NONE) return [];
 
       const positions: PiecePosition[] = [];
 
       for(let i = 1;
-        this._board.value[p2.position.y + (i*dir)][p2.position.x].color == PieceColorEnum.NONE
+        board[p2.position.y + (i*dir)][p2.position.x].color == PieceColorEnum.NONE
         && (p2.position.y + (i*dir)) >= 0
         && (p2.position.y + (i*dir)) < gameConfig.boardHeight
         ; ++i) {
@@ -386,7 +406,7 @@ export class GameService {
       if (this._board[p2.position.y][p2.position.x + dir].color !== PieceColorEnum.NONE) return [];
 
       for (let i = 1; i < dist; ++i) {
-        if (this._board.value[p1.position.y][p1.position.x + i * dir].color !== PieceColorEnum.NONE){
+        if (board[p1.position.y][p1.position.x + i * dir].color !== PieceColorEnum.NONE){
           return [];
         }
       }
@@ -395,7 +415,7 @@ export class GameService {
 
       // for(int i = dist+1; board[p1.position.y][p1.position.x + (i * dir)].color == Piece::Color::None; ++i){
       for(let i = 1;
-      this._board.value[p2.position.y][p2.position.x + (i*dir)].color == PieceColorEnum.NONE // taken from the other if
+      board[p2.position.y][p2.position.x + (i*dir)].color == PieceColorEnum.NONE // taken from the other if
       && (p2.position.x + (i*dir)) >= 0
       && (p2.position.x + (i*dir)) < gameConfig.boardWidth;
       ++i){
@@ -407,7 +427,7 @@ export class GameService {
   }
 
   public getPossibleMovesOf(p: Piece): Move[] {
-    const key: string = `${p.position.x}${p.position.y}`;
+    const key: string = `${p.position.x},${p.position.y}`;
     if(!this._moveCacheMap.has(key)) return [];
     return this._moveCacheMap.get(key);
   }
