@@ -17,7 +17,7 @@ export class GameService {
   private _piecesPositionsFEN: BehaviorSubject<string> = new BehaviorSubject<string>(gameConfig.initialPiecesPositionsFEN);
   private _board: BehaviorSubject<Board> = new BehaviorSubject<Board>([]);
   private _turn: PieceColorEnum = PieceColorEnum.BLACK;
-  private _directions: DirectionsEnum[] = [DirectionsEnum.NORTH, DirectionsEnum.EAST, DirectionsEnum.SOUTH, DirectionsEnum.WEST];
+  private _directions: DirectionsEnum[] = [ DirectionsEnum.NORTH, DirectionsEnum.EAST, DirectionsEnum.SOUTH, DirectionsEnum.WEST ];
   private _boardBlocks: number[][][] = [];
   private _possible_moves: Move[] = [];
   private _moveCacheMap: Map<string, Move[]> = new Map<string, Move[]>();
@@ -43,9 +43,7 @@ export class GameService {
   public play(move: Move): void {
     // const board: Board = [...this._board.value];
     const board: Board = JSON.parse(JSON.stringify(this._board.value));
-
     const OLD = board[move.positions[0].y][move.positions[0].x];
-
     const p: Piece = new Piece(move.positions[move.positions.length -1], OLD.color, OLD.king)
 
     board[move.positions[0].y][move.positions[0].x].color = PieceColorEnum.NONE;
@@ -61,14 +59,12 @@ export class GameService {
     // p.position = move.positions[move.positions.length -1];
 
     // promotion
-    if(!p.king && (p.position.y == 0 || p.position.y == 7)){ // might need to check color too
+    if (!p.king && (p.position.y == 0 || p.position.y == 7)) { // might need to check color too
       p.king = true;
     }
 
     board[p.position.y][p.position.x] = p;
 
-    const fenForThisTurn = this._generateFen(board);
-    this.setPiecesPositionsFEN(fenForThisTurn);
     this.updateBoard(board);
     this.nextTurn();
   }
@@ -173,8 +169,7 @@ export class GameService {
   private _makeSingleMove(p: Piece, eaten: Piece, pos: PiecePosition): Board {
     // const board: Board = [...this._board.value];
     const board: Board = JSON.parse(JSON.stringify(this._board.value))
-
-    const NEW_PIECE = new Piece(pos, p.color, p.king);
+    const NEW_PIECE: Piece = new Piece(pos, p.color, p.king);
 
     board[eaten.position.y][eaten.position.x].color = PieceColorEnum.NONE;
     board[p.position.y][p.position.x].color = PieceColorEnum.NONE;
@@ -220,16 +215,13 @@ export class GameService {
       } else {
         const pos: PiecePosition | null = this._canPawnEat(p, board[y][x], board);
 
-        if (pos != null) {
-
+        if (pos !== null) {
           const move: Move = new Move([p.position, pos], true);
           move.eaten.push(new Piece(board[y][x].position, board[y][x].color, board[y][x].king));
 
           const eaten: Piece = new Piece(board[y][x].position, board[y][x].color, board[y][x].king);
-
           const new_board: Board = this._makeSingleMove(p, eaten, pos);
           const moves2: Move[] = this._generatePossiblePawnMoves(p, new_board, true);
-          // this._unmakeSingleMove(p, eaten, oldPos);
 
 
           // add the eaten piece to the move
