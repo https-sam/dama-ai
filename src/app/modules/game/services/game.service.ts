@@ -21,6 +21,10 @@ export class GameService {
   private _boardBlocks: number[][][] = [];
   private _possible_moves: Move[] = [];
   private _moveCacheMap: Map<string, Move[]> = new Map<string, Move[]>();
+  private _numYellow: number = 0;
+  private _numBlack: number = 0;
+  private _numShaikhYellow: number = 0;
+  private _numShaikhBlack: number = 0;
 
   public piecesPositionsFEN$: Observable<string> = this._piecesPositionsFEN.asObservable();
   public board$: Observable<Board> = this._board.asObservable();
@@ -29,6 +33,37 @@ export class GameService {
   constructor() {
     this._preComputeBoardBlocks();
   }
+
+
+  public getNumYellow(){
+    return this._numYellow;
+  }
+
+  public getNumBlack(){
+    return this._numBlack;
+  }
+
+  public getNumYellowKing(){
+    return this._numShaikhYellow;
+  }
+
+  public getNumBlackKing(){
+    return this._numShaikhBlack;
+  }
+
+  public setNumBlack(n: number){
+    this._numBlack = n;
+  }
+  public setNumYellow(n: number){
+    this._numYellow = n;
+  }
+  public setNumBlackKing(n: number){
+    this._numShaikhBlack = n;
+  }
+  public setNumYellowKing(n: number){
+    this._numShaikhYellow = n;
+  }
+
 
   public init(): void {
     this._possible_moves = this._generatePossibleMoves();
@@ -42,8 +77,6 @@ export class GameService {
 
   public play(move: Move): void {
     // const board: Board = [...this._board.value];
-    console.log("Playing move:")
-    console.log(move);
     const board: Board = JSON.parse(JSON.stringify(this._board.value));
 
     const oldPos = new PiecePosition(move.positions[0].x, move.positions[0].y);
@@ -56,8 +89,18 @@ export class GameService {
     board[move.positions[0].y][move.positions[0].x].position = new PiecePosition(-1, -1);
 
     for (const pi of move.eaten) {
+      if(pi.color === PieceColorEnum.BLACK){
+        if(pi.king) --this._numShaikhBlack;
+        --this._numBlack;
+      }
+      else{
+        if(pi.king) --this._numShaikhYellow;
+        --this._numYellow;
+      }
+
       board[pi.position.y][pi.position.x].color = PieceColorEnum.NONE;
       board[pi.position.y][pi.position.x].king = false;
+
       // board[pi.position.y][pi.position.x].position = new PiecePosition(-1, -1);
     }
 

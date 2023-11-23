@@ -6,6 +6,7 @@ import {GameService} from '../services/game.service';
 import {Observable, Subscription} from 'rxjs';
 import {Move} from '../../piece/helperClasses/Move';
 import {Board} from '../types/board';
+import {gameConfig} from "../game-config";
 
 
 @Component({
@@ -14,10 +15,6 @@ import {Board} from '../types/board';
   styleUrls: ['./game.component.scss']
 })
 export class GameComponent implements OnInit, OnDestroy {
-  private _numYellow: number = 0;
-  private _numBlack: number = 0;
-  private _numShaikhYellow: number = 0;
-  private _numShaikhBlack: number = 0;
   private _subscription: Subscription | undefined = undefined;
 
   public currentBoard: Board = null;
@@ -75,6 +72,17 @@ export class GameComponent implements OnInit, OnDestroy {
       if (selectedMove) {
         this._gameService.play(selectedMove); // Execute the move
         this.possiblePositions.clear();
+
+        if(this._gameService.getNumBlack() == 0){
+          alert("Yellow has won the game!");
+          this._parseFEN(gameConfig.initialPiecesPositionsFEN);
+        }
+        if(this._gameService.getNumYellow() == 0){
+          alert("Black has won the game!");
+          this._parseFEN(gameConfig.initialPiecesPositionsFEN);
+        }
+
+
       }
     } else {
       this.displayPossibleMoves(piece); // Display possible moves for the selected piece
@@ -91,27 +99,32 @@ export class GameComponent implements OnInit, OnDestroy {
     let x: number = 0;
     let y: number = 0;
 
+    let numYellow = 0;
+    let numBlack = 0;
+    let numYellowKing = 0;
+    let numBlackKing = 0;
+
     for (const c of fen) {
       switch (c) {
         case 'y':
-          this._numYellow++;
+          numYellow++;
           board[y][x] = new Piece(new PiecePosition(x, y), PieceColorEnum.YELLOW, false);
           x++;
           break;
         case 'Y':
-          this._numYellow++;
-          this._numShaikhYellow++;
+          numYellow++;
+          numYellowKing++;
           board[y][x] = new Piece(new PiecePosition(x, y), PieceColorEnum.YELLOW, true);
           x++;
           break;
         case 'b':
-          this._numBlack++;
+          numBlack++;
           board[y][x] = new Piece(new PiecePosition(x, y), PieceColorEnum.BLACK, false);
           x++;
           break;
         case 'B':
-          this._numBlack++;
-          this._numShaikhBlack++;
+          numBlack++;
+          numBlackKing++;
           board[y][x] = new Piece(new PiecePosition(x, y), PieceColorEnum.BLACK, true);
           x++;
           break;
@@ -129,6 +142,11 @@ export class GameComponent implements OnInit, OnDestroy {
 
           break;
       }
+
+      this._gameService.setNumBlack(numBlack);
+      this._gameService.setNumYellow(numYellow);
+      this._gameService.setNumBlackKing(numBlackKing);
+      this._gameService.setNumYellowKing(numYellowKing);
     }
 
     this._gameService.updateBoard(board);
