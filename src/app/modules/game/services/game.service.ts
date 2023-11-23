@@ -419,7 +419,7 @@ export class GameService {
 
       if (p2.position.x + dir < 0 || p2.position.x + dir >= gameConfig.boardWidth) return [];
 
-      if (this._board[p2.position.y][p2.position.x + dir].color !== PieceColorEnum.NONE) return [];
+      if (board[p2.position.y][p2.position.x + dir].color !== PieceColorEnum.NONE) return [];
 
       for (let i = 1; i < dist; ++i) {
         if (board[p1.position.y][p1.position.x + i * dir].color !== PieceColorEnum.NONE){
@@ -431,9 +431,9 @@ export class GameService {
 
       // for(int i = dist+1; board[p1.position.y][p1.position.x + (i * dir)].color == Piece::Color::None; ++i){
       for(let i = 1;
-      board[p2.position.y][p2.position.x + (i*dir)].color == PieceColorEnum.NONE // taken from the other if
-      && (p2.position.x + (i*dir)) >= 0
-      && (p2.position.x + (i*dir)) < gameConfig.boardWidth;
+      (p2.position.x + (i*dir)) >= 0
+      && (p2.position.x + (i*dir)) < gameConfig.boardWidth
+      && board[p2.position.y][p2.position.x + (i*dir)].color == PieceColorEnum.NONE; // taken from the other if
       ++i){
         positions.push(new PiecePosition(p2.position.x + (i*dir), p2.position.y));
       }
