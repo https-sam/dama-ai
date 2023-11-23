@@ -1,11 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Piece } from '../../piece/helperClasses/Piece';
-import { PiecePosition } from '../../piece/helperClasses/PiecePosition';
-import { PieceColorEnum } from '../../piece/enum/PieceColorEnum';
-import { GameService } from '../services/game.service';
-import { Observable, Subscription } from 'rxjs';
-import { Move } from '../../piece/helperClasses/Move';
-import { Board } from '../types/board';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Piece} from '../../piece/helperClasses/Piece';
+import {PiecePosition} from '../../piece/helperClasses/PiecePosition';
+import {PieceColorEnum} from '../../piece/enum/PieceColorEnum';
+import {GameService} from '../services/game.service';
+import {Observable, Subscription} from 'rxjs';
+import {Move} from '../../piece/helperClasses/Move';
+import {Board} from '../types/board';
 
 
 @Component({
@@ -53,7 +53,6 @@ export class GameComponent implements OnInit, OnDestroy {
   public displayPossibleMoves(piece: Piece): void {
     this.highlightedPieces = this._gameService.getPossibleMovesOf(piece);
     let newPositions: Set<string> = new Set<string>();
-    console.log(this.highlightedPieces)
 
     this.highlightedPieces.forEach((move: Move): void => {
       for (let i = 1; i < move.positions.length; i++) {
@@ -63,7 +62,6 @@ export class GameComponent implements OnInit, OnDestroy {
     });
 
     // Assign a new set to trigger change detection
-    console.log(newPositions)
     this.possiblePositions = newPositions;
   }
 
@@ -71,17 +69,14 @@ export class GameComponent implements OnInit, OnDestroy {
 
   public handleClick(piece: Piece, x: number, y: number): void {
     if (this.isPossibleMove(x, y)) {
-      console.log("Branch true");
       const selectedMove = this.highlightedPieces.find(move =>
         move.positions.some(pos => pos.x === x && pos.y === y));
 
       if (selectedMove) {
-        console.log(selectedMove);
         this._gameService.play(selectedMove); // Execute the move
         this.possiblePositions.clear();
       }
     } else {
-      console.log("Branch false");
       this.displayPossibleMoves(piece); // Display possible moves for the selected piece
     }
   }
@@ -126,7 +121,12 @@ export class GameComponent implements OnInit, OnDestroy {
           break;
         default:
           let num: number = parseInt(c);
+          // const old_x: number = x;
           x += isNaN(num) ? 0 : num;
+          // for(let i = old_x; i < x; ++i){
+          //   board[y][i] = new Piece(new PiecePosition(-1, -1), PieceColorEnum.NONE, false);
+          // }
+
           break;
       }
     }

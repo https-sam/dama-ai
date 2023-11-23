@@ -42,25 +42,26 @@ export class GameService {
 
   public play(move: Move): void {
     // const board: Board = [...this._board.value];
+    console.log("Playing move:")
+    console.log(move);
     const board: Board = JSON.parse(JSON.stringify(this._board.value));
 
-    const OLD = board[move.positions[0].y][move.positions[0].x];
-
-    const p: Piece = new Piece(move.positions[move.positions.length -1], OLD.color, OLD.king)
+    const oldPos = new PiecePosition(move.positions[0].x, move.positions[0].y);
+    const OLD = board[oldPos.y][oldPos.x];
+    const newPos = new PiecePosition(move.positions[move.positions.length -1].x, move.positions[move.positions.length -1].y);
+    const p: Piece = new Piece(newPos, OLD.color, OLD.king)
 
     board[move.positions[0].y][move.positions[0].x].color = PieceColorEnum.NONE;
     board[move.positions[0].y][move.positions[0].x].king = false;
-    // board[move.positions[0].y][move.positions[0].x].position = new PiecePosition(-1, -1);
+    board[move.positions[0].y][move.positions[0].x].position = new PiecePosition(-1, -1);
 
-    for (const p of move.eaten) {
-      if (p.color === PieceColorEnum.BLACK) {
-        board[p.position.y][p.position.x].color = PieceColorEnum.NONE;
-        board[p.position.y][p.position.x].king = false;
-        // board[p.position.y][p.position.x].position = new PiecePosition(-1, -1);
-      }
+    for (const pi of move.eaten) {
+      board[pi.position.y][pi.position.x].color = PieceColorEnum.NONE;
+      board[pi.position.y][pi.position.x].king = false;
+      // board[pi.position.y][pi.position.x].position = new PiecePosition(-1, -1);
     }
 
-    // p.position = move.positions[move.positions.length -1];
+    p.position = move.positions[move.positions.length -1];
 
     // promotion
     if(!p.king && (p.position.y == 0 || p.position.y == 7)){ // might need to check color too
@@ -69,8 +70,8 @@ export class GameService {
 
     board[p.position.y][p.position.x] = p;
 
-    const fenForThisTurn = this._generateFen(board);
-    this.setPiecesPositionsFEN(fenForThisTurn);
+    // const fenForThisTurn = this._generateFen(board);
+    // this.setPiecesPositionsFEN(fenForThisTurn);
     this.updateBoard(board);
     this.nextTurn();
   }
@@ -80,7 +81,6 @@ export class GameService {
 
     this._turn = this._turn === PieceColorEnum.BLACK ? PieceColorEnum.YELLOW : PieceColorEnum.BLACK;
     this._possible_moves = this._generatePossibleMoves();
-    console.log(this._possible_moves);
 
     for (const move of this._possible_moves) {
       const key: string = `${move.positions[0].x},${move.positions[0].y}`;
@@ -130,16 +130,17 @@ export class GameService {
 
   private _generatePossibleMoves(): Move[] {
     let moves: Move[] = [];
-    const board: Board = JSON.parse(JSON.stringify(this._board.value))
+    // const board: Board = JSON.parse(JSON.stringify(this._board.value))
 
-    for(const row of board){
+    for(const row of this._board.value){
       for(const p of row) {
         if(p.color === this._turn){
-            const moves2: Move[] = p.king ? this._generatePossibleKingMoves(p, board) : this._generatePossiblePawnMoves(p, board);
+            const moves2: Move[] = p.king ? this._generatePossibleKingMoves(p, this._board.value) : this._generatePossiblePawnMoves(p, this._board.value);
             moves.push(...moves2);
         }
       }
     }
+
 
     const eating: boolean = moves.some((m: Move) => m.eat );
 
@@ -173,28 +174,40 @@ export class GameService {
   }
 
 
-  private _makeSingleMove(p: Piece, eaten: Piece, pos: PiecePosition): Board {
-    // const board: Board = [...this._board.value];
-    const board: Board = JSON.parse(JSON.stringify(this._board.value))
+  private _makeSingleMove(p: Piece, eaten: Piece, pos: PiecePosition, old_board: Board): {new_piece: Piece, new_board: Board} {
+    // const board: Board = [...old_board];
+    const board: Board = JSON.parse(JSON.stringify(old_board))
 
-    const NEW_PIECE = new Piece(pos, p.color, p.king);
+    const NEW_PIECE = new Piece(new PiecePosition(pos.x, pos.y), p.color, p.king);
 
-    board[eaten.position.y][eaten.position.x] = new Piece(new PiecePosition(-1, -1), PieceColorEnum.NONE, false);
-    board[p.position.y][p.position.x] = new Piece(new PiecePosition(-1, -1), PieceColorEnum.NONE, false);
+    // board[eaten.position.y][eaten.position.x] = new Piece(new PiecePosition(-1, -1), PieceColorEnum.NONE, false);
+    board[eaten.position.y][eaten.position.x].color = PieceColorEnum.NONE;
+    board[eaten.position.y][eaten.position.x].king = false;
+    board[eaten.position.y][eaten.position.x].position.x = -1;
+    board[eaten.position.y][eaten.position.x].position.y = -1;
+
+    // board[p.position.y][p.position.x] = new Piece(new PiecePosition(-1, -1), PieceColorEnum.NONE, false);
+    board[p.position.y][p.position.x].color = PieceColorEnum.NONE;
+    board[p.position.y][p.position.x].king = false;
+    board[p.position.y][p.position.x].position.x = -1;
+    board[p.position.y][p.position.x].position.y = -1;
+
+
     board[pos.y][pos.x] = NEW_PIECE;
     // p.position = pos;
 
-    return board;
+    return {
+      new_piece: NEW_PIECE,
+      new_board: board,
+    };
   }
-
 
   private _generatePossiblePawnMoves(p: Piece, board: Board, eating: boolean = false): Move[] {
     const moves: Move[] = [];
 
     for (const direction of this._directions) {
-
-      if (direction === DirectionsEnum.NORTH && p.color === PieceColorEnum.YELLOW) continue;
-      if (direction === DirectionsEnum.SOUTH && p.color === PieceColorEnum.BLACK) continue;
+      if (direction === DirectionsEnum.NORTH && (p.color === PieceColorEnum.YELLOW || p.position.y == 0)) continue;
+      if (direction === DirectionsEnum.SOUTH && (p.color === PieceColorEnum.BLACK || p.position.y == 7)) continue;
       if (direction === DirectionsEnum.EAST && p.position.x === 7) continue;
       if (direction === DirectionsEnum.WEST && p.position.x === 0) continue;
 
@@ -218,30 +231,30 @@ export class GameService {
 
       if (board[y][x].color === PieceColorEnum.NONE && !eating) {
         moves.push(new Move([p.position, new PiecePosition(x, y)]))
-      } else {
+      } else if(board[y][x].color != p.color){
         const pos: PiecePosition | null = this._canPawnEat(p, board[y][x], board);
 
         if (pos != null) {
 
           const move: Move = new Move([p.position, pos], true);
-          move.eaten.push(new Piece(board[y][x].position, board[y][x].color, board[y][x].king));
+          move.eaten.push(board[y][x]);
 
-          const eaten: Piece = new Piece(board[y][x].position, board[y][x].color, board[y][x].king);
+          const eaten: Piece = board[y][x];
 
-          const new_board: Board = this._makeSingleMove(p, eaten, pos);
-          const moves2: Move[] = this._generatePossiblePawnMoves(p, new_board, true);
+          const {new_piece, new_board} = this._makeSingleMove(p, eaten, pos, board);
+          const moves2: Move[] = this._generatePossiblePawnMoves(new_piece, new_board, true);
           // this._unmakeSingleMove(p, eaten, oldPos);
 
 
           // add the eaten piece to the move
           for (const m of moves2) {
-            const m2: Move = move;
+            const m2: Move = new Move(move.positions, true);
+            m2.eaten.push(...move.eaten);
 
-            for (let i: number = 1; i < m.positions.length; i++){
+            for (let i: number = 1; i < m.positions.length; i++) {
               m2.positions.push(m.positions[i]);
             }
 
-            m2.eat = true;
             m2.eaten.push(...m.eaten);
 
             moves.push(m2);
@@ -293,7 +306,7 @@ export class GameService {
             break;
         }
 
-        if (board[y][x].color === PieceColorEnum.NONE && !eating) {
+        if (!eating && board[y][x].color === PieceColorEnum.NONE) {
           moves.push(new Move([p.position, new PiecePosition(x, y)]));
         } else if(board[y][x].color != p.color) {
           if (x2 < 0 || x2 >= gameConfig.boardWidth || y2 < 0 || y2 >= gameConfig.boardHeight) continue;
@@ -302,25 +315,26 @@ export class GameService {
           const positions: PiecePosition[] = this._canKingEat(p, board[y][x], board);
 
           for(const pos of positions){
-            const oldPos: PiecePosition = p.position;
             const eaten: Piece = board[y][x];
             const move: Move = new Move([p.position, pos], true);
 
             move.eaten.push(eaten);
 
-            const new_board = this._makeSingleMove(p, eaten, pos);
-            const moves2: Move[] = this._generatePossibleKingMoves(p, new_board, true);
+            const {new_piece, new_board} = this._makeSingleMove(p, eaten, pos, board);
+            const moves2: Move[] = this._generatePossibleKingMoves(new_piece, new_board, true);
 
             // add the eaten piece to the move
             for(const m of moves2){
-              const m2: Move = move;
+              const m2: Move = new Move([...move.positions], true);
+              m2.eaten.push(...move.eaten);
 
               for(let i = 1; i < m.positions.length; ++i){
                 m2.positions.push(m.positions[i]);
               }
 
-              m2.eat = true;
+              // m2.eat = true;
               m2.eaten.push(...m.eaten);
+
               moves.push(m2);
             }
 
@@ -335,7 +349,7 @@ export class GameService {
 
 
   private _canPawnEat(p1: Piece, p2: Piece, board: Board): PiecePosition | null {
-    if ((p2.position.x != p1.position.x && p2.position.y != p1.position.y) || p1.color === p2.color)
+    if ((p2.position.x != p1.position.x && p2.position.y != p1.position.y) || (p1.color === p2.color) || p2.color == PieceColorEnum.NONE)
       return null;
 
     const result: number = p1.color === PieceColorEnum.YELLOW ? 1 : -1;
@@ -370,7 +384,7 @@ export class GameService {
   }
 
   private _canKingEat(p1: Piece, p2: Piece, board: Board): PiecePosition[] {
-    if ((p2.position.x !== p1.position.x && p2.position.y !== p1.position.y) || p1.color === p2.color)
+    if ((p2.position.x !== p1.position.x && p2.position.y !== p1.position.y) || p1.color === p2.color || p2.color == PieceColorEnum.NONE)
       return [];
 
     // check if this piece can jump over the other piece even if it is a long jump
@@ -391,18 +405,19 @@ export class GameService {
       const positions: PiecePosition[] = [];
 
       for(let i = 1;
-        board[p2.position.y + (i*dir)][p2.position.x].color == PieceColorEnum.NONE
-        && (p2.position.y + (i*dir)) >= 0
+        (p2.position.y + (i*dir)) >= 0
         && (p2.position.y + (i*dir)) < gameConfig.boardHeight
+        && board[p2.position.y + (i*dir)][p2.position.x].color == PieceColorEnum.NONE
         ; ++i) {
           positions.push(new PiecePosition(p2.position.x, p2.position.y + (i * dir)));
       }
       return positions;
     } else { // if p2.position.y === p1.position.y
 
-      if (p2.position.x === 0 || p2.position.x === 7) return [];
       const dist: number = Math.abs(p2.position.x - p1.position.x);
       const dir: number = p2.position.x - p1.position.x > 0 ? 1 : -1;
+
+      if (p2.position.x + dir < 0 || p2.position.x + dir >= gameConfig.boardWidth) return [];
 
       if (this._board[p2.position.y][p2.position.x + dir].color !== PieceColorEnum.NONE) return [];
 
