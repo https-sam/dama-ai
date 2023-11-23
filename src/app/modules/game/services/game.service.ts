@@ -308,9 +308,9 @@ export class GameService {
 
         if (!eating && board[y][x].color === PieceColorEnum.NONE) {
           moves.push(new Move([p.position, new PiecePosition(x, y)]));
-        } else if(board[y][x].color != p.color) {
+        } else if(board[y][x].color !== p.color) {
           if (x2 < 0 || x2 >= gameConfig.boardWidth || y2 < 0 || y2 >= gameConfig.boardHeight) continue;
-          if (board[y2][x2].color != PieceColorEnum.NONE) continue;
+          if (board[y2][x2].color !== PieceColorEnum.NONE) continue;
 
           const positions: PiecePosition[] = this._canKingEat(p, board[y][x], board);
 
@@ -340,6 +340,7 @@ export class GameService {
 
             moves.push(move);
           }
+          break;
         }
         else break;
       }
