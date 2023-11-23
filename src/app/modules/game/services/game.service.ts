@@ -50,11 +50,13 @@ export class GameService {
 
     board[move.positions[0].y][move.positions[0].x].color = PieceColorEnum.NONE;
     board[move.positions[0].y][move.positions[0].x].king = false;
+    // board[move.positions[0].y][move.positions[0].x].position = new PiecePosition(-1, -1);
 
     for (const p of move.eaten) {
       if (p.color === PieceColorEnum.BLACK) {
         board[p.position.y][p.position.x].color = PieceColorEnum.NONE;
         board[p.position.y][p.position.x].king = false;
+        // board[p.position.y][p.position.x].position = new PiecePosition(-1, -1);
       }
     }
 
@@ -78,6 +80,7 @@ export class GameService {
 
     this._turn = this._turn === PieceColorEnum.BLACK ? PieceColorEnum.YELLOW : PieceColorEnum.BLACK;
     this._possible_moves = this._generatePossibleMoves();
+    console.log(this._possible_moves);
 
     for (const move of this._possible_moves) {
       const key: string = `${move.positions[0].x},${move.positions[0].y}`;
@@ -176,12 +179,10 @@ export class GameService {
 
     const NEW_PIECE = new Piece(pos, p.color, p.king);
 
-    board[eaten.position.y][eaten.position.x].color = PieceColorEnum.NONE;
-    board[p.position.y][p.position.x].color = PieceColorEnum.NONE;
+    board[eaten.position.y][eaten.position.x] = new Piece(new PiecePosition(-1, -1), PieceColorEnum.NONE, false);
+    board[p.position.y][p.position.x] = new Piece(new PiecePosition(-1, -1), PieceColorEnum.NONE, false);
     board[pos.y][pos.x] = NEW_PIECE;
     // p.position = pos;
-
-    console.log(board)
 
     return board;
   }
