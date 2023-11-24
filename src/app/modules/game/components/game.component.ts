@@ -17,10 +17,8 @@ import {gameConfig} from "../game-config";
 export class GameComponent implements OnInit, OnDestroy {
   private _subscription: Subscription | undefined = undefined;
 
-  public currentBoard: Board = null;
   public highlightedPieces: Move[] = [];
   public possiblePositions: Set<string> = new Set();
-
 
 
   constructor(
@@ -63,7 +61,6 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
 
-
   public handleClick(piece: Piece, x: number, y: number): void {
     if (this.isPossibleMove(x, y)) {
       const selectedMove = this.highlightedPieces.find(move =>
@@ -73,15 +70,13 @@ export class GameComponent implements OnInit, OnDestroy {
         this._gameService.play(selectedMove); // Execute the move
         this.possiblePositions.clear();
 
-        if(this._gameService.getNumBlack() == 0){
+        if (this._gameService.getNumBlack === 0){
           alert("Yellow has won the game!");
           this._parseFEN(gameConfig.initialPiecesPositionsFEN);
-        }
-        else if(this._gameService.getNumYellow() == 0){
+        } else if (this._gameService.getNumYellow() === 0) {
           alert("Black has won the game!");
           this._parseFEN(gameConfig.initialPiecesPositionsFEN);
-        }
-        else{
+        } else {
           // AI turn:
           const moves = this._gameService.possible_moves;
           let best: number = -1000000;
@@ -103,7 +98,6 @@ export class GameComponent implements OnInit, OnDestroy {
           this._gameService.play(bestMove);
           this.possiblePositions.clear();
         }
-
       }
     } else {
       this.displayPossibleMoves(piece); // Display possible moves for the selected piece
@@ -155,19 +149,14 @@ export class GameComponent implements OnInit, OnDestroy {
           break;
         default:
           let num: number = parseInt(c);
-          // const old_x: number = x;
           x += isNaN(num) ? 0 : num;
-          // for(let i = old_x; i < x; ++i){
-          //   board[y][i] = new Piece(new PiecePosition(-1, -1), PieceColorEnum.NONE, false);
-          // }
-
           break;
       }
 
-      this._gameService.setNumBlack(numBlack);
-      this._gameService.setNumYellow(numYellow);
-      this._gameService.setNumBlackKing(numBlackKing);
-      this._gameService.setNumYellowKing(numYellowKing);
+      this._gameService.setNumBlack = numBlack;
+      this._gameService.setNumYellow = numYellow;
+      this._gameService.setNumBlackKing = numBlackKing;
+      this._gameService.setNumYellowKing = numYellowKing;
     }
 
     this._gameService.updateBoard(board);
