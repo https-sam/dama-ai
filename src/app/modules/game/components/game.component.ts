@@ -77,11 +77,32 @@ export class GameComponent implements OnInit, OnDestroy {
           alert("Yellow has won the game!");
           this._parseFEN(gameConfig.initialPiecesPositionsFEN);
         }
-        if(this._gameService.getNumYellow() == 0){
+        else if(this._gameService.getNumYellow() == 0){
           alert("Black has won the game!");
           this._parseFEN(gameConfig.initialPiecesPositionsFEN);
         }
+        else{
+          // AI turn:
+          const moves = this._gameService.possible_moves;
+          let best: number = -1000000;
+          let bestMove: Move = moves[0];
 
+
+          if(moves.length > 1)
+            for(const m of moves){
+              const {promotion, new_board} = this._gameService.makeMove(m, this._gameService.getBoard());
+              const score: number = this._gameService.alphaBeta(4, new_board);
+              this._gameService.unmakeMove(m, promotion, new_board);
+
+              if(score >= best){ // using >= instead of > to avoid the first move being the same every time
+                best = score;
+                bestMove = m;
+              }
+            }
+
+          this._gameService.play(bestMove);
+          this.possiblePositions.clear();
+        }
 
       }
     } else {
@@ -151,6 +172,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
     this._gameService.updateBoard(board);
   }
+
 
 }
 
