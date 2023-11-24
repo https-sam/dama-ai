@@ -117,14 +117,12 @@ export class GameService {
     p.position = move.positions[move.positions.length -1];
 
     // promotion
-    if(!p.king && (p.position.y === 0 || p.position.y === 7)){ // might need to check color too
+    if (!p.king && (p.position.y === 0 || p.position.y === 7)) { // might need to check color too
       p.king = true;
     }
 
     board[p.position.y][p.position.x] = p;
 
-    // const fenForThisTurn = this._generateFen(board);
-    // this.setPiecesPositionsFEN(fenForThisTurn);
     this._turn = p.otherColor();
     this.updateBoard(board);
     this.nextTurn();
@@ -132,7 +130,6 @@ export class GameService {
 
   public nextTurn(): void {
     this._moveCacheMap.clear();
-    // this._turn = this._turn === PieceColorEnum.BLACK ? PieceColorEnum.YELLOW : PieceColorEnum.BLACK;
     this.possible_moves = this._generatePossibleMoves(this._board.value);
 
     for (const move of this.possible_moves) {
@@ -556,13 +553,11 @@ export class GameService {
     const endgame: boolean = this._numBlack == this._numShaikhBlack && this._numYellow == this._numShaikhYellow;
     const blackMaterial: number = this._countMaterial(PieceColorEnum.BLACK, board, endgame);
     const yellowMaterial: number = this._countMaterial(PieceColorEnum.YELLOW, board, endgame);
-
-    const prespective: number = this._turn === PieceColorEnum.BLACK ? 1 : -1;
+    const perspective: number = this._turn === PieceColorEnum.BLACK ? 1 : -1;
     const material: number = blackMaterial - yellowMaterial;
     const evaluation: number = material / (this._numBlack + this._numYellow);
-                                        // we normalize so its preferred to have less pieces on the boars
 
-    return evaluation * prespective;
+    return evaluation * perspective;
   }
 
 
