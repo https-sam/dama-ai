@@ -12,4 +12,8 @@ export class Piece {
     this.position = position;
   }
 
+  public otherColor(): PieceColorEnum {
+    return this.color === PieceColorEnum.YELLOW ? PieceColorEnum.BLACK : PieceColorEnum.YELLOW;
+  }
+
 }

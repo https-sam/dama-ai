@@ -1,8 +1,7 @@
-import { Component, Input } from '@angular/core';
-import { PieceColorEnum } from '../enum/PieceColorEnum';
-import { PiecePosition } from '../helperClasses/PiecePosition';
-import { Piece } from '../helperClasses/Piece';
-
+import {Component, Input} from '@angular/core';
+import {PieceColorEnum} from '../enum/PieceColorEnum';
+import {PiecePosition} from '../helperClasses/PiecePosition';
+import {Piece} from '../helperClasses/Piece';
 
 
 @Component({
@@ -17,5 +16,8 @@ export class PieceComponent implements Piece {
 
   protected readonly PieceColorEnum = PieceColorEnum;
 
+  public otherColor(): PieceColorEnum {
+    return this.color === PieceColorEnum.YELLOW ? PieceColorEnum.BLACK : PieceColorEnum.YELLOW;
+  }
 }
 // const nullPiece: PieceComponent = new PieceComponent(PieceColorEnum.NONE, PiecePosition.nullPos);
