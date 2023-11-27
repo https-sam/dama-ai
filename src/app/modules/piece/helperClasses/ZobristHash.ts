@@ -1,6 +1,6 @@
-import {Piece} from "./Piece"
-import {PieceColorEnum} from "../enum/PieceColorEnum";
-import {Board} from "../../game/types/board";
+import { Piece } from "./Piece"
+import { PieceColorEnum } from "../enum/PieceColorEnum";
+import { Board } from "../../game/types/board";
 
 
 export class ZobristHash{

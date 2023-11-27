@@ -1,14 +1,14 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable} from 'rxjs';
-import {gameConfig} from '../game-config';
-import {Piece} from '../../piece/helperClasses/Piece';
-import {Move} from '../../piece/helperClasses/Move';
-import {PieceColorEnum} from '../../piece/enum/PieceColorEnum';
-import {DirectionsEnum} from '../../piece/enum/DirectionsEnum';
-import {PiecePosition} from '../../piece/helperClasses/PiecePosition';
-import {Board} from '../types/board';
-import {FixedSizeCache} from "../../piece/helperClasses/FixedSizeHash";
-import {ZobristHash} from "../../piece/helperClasses/ZobristHash";
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { gameConfig } from '../game-config';
+import { Piece } from '../../piece/helperClasses/Piece';
+import { Move } from '../../piece/helperClasses/Move';
+import { PieceColorEnum } from '../../piece/enum/PieceColorEnum';
+import { DirectionsEnum } from '../../piece/enum/DirectionsEnum';
+import { PiecePosition } from '../../piece/helperClasses/PiecePosition';
+import { Board } from '../types/board';
+import { FixedSizeCache } from "../../piece/helperClasses/FixedSizeHash";
+import { ZobristHash } from "../../piece/helperClasses/ZobristHash";
 
 
 
@@ -31,7 +31,7 @@ export class GameService {
   private _cacheHash: FixedSizeCache = new FixedSizeCache(1_000_000)
   private _hasher: ZobristHash = new ZobristHash();
 
-  public possible_moves: Move[] = [];
+  public possibleMoves: Move[] = [];
   public piecesPositionsFEN$: Observable<string> = this._piecesPositionsFEN.asObservable();
   public board$: Observable<Board> = this._board.asObservable();
 
@@ -79,9 +79,9 @@ export class GameService {
 
 
   public init(): void {
-    this.possible_moves = this._generatePossibleMoves(this._board.value);
+    this.possibleMoves = this._generatePossibleMoves(this._board.value);
 
-    for (const move of this.possible_moves) {
+    for (const move of this.possibleMoves) {
       const key: string = `${move.positions[0].x},${move.positions[0].y}`;
       if (!this._moveCacheMap.has(key)) this._moveCacheMap.set(key, []);
       this._moveCacheMap.set(key, [...this._moveCacheMap.get(key), move]);
@@ -130,13 +130,7 @@ export class GameService {
 
   public nextTurn(): void {
     this._moveCacheMap.clear();
-    this.possible_moves = this._generatePossibleMoves(this._board.value);
-
-    for (const move of this.possible_moves) {
-      const key: string = `${move.positions[0].x},${move.positions[0].y}`;
-      if (!this._moveCacheMap.has(key)) this._moveCacheMap.set(key, []);
-      this._moveCacheMap.set(key, [...this._moveCacheMap.get(key), move]);
-    }
+    this.init();
   }
 
   private _generateFen(board: Board): string {
@@ -145,23 +139,23 @@ export class GameService {
       let count = 0;
       let line: string = "";
       for(const p of row){
-          switch (p.color){
-            case PieceColorEnum.NONE:
-              ++count;
-              break;
-            case PieceColorEnum.YELLOW:
-              if(count != 0) line += `${count}`;
-              line += p.king ? "Y" : "y";
-              count = 0;
-              break;
-            case PieceColorEnum.BLACK:
-              if(count != 0) line += `${count}`;
-              line += p.king ? "B" : "b";
-              count = 0;
-              break;
-          }
+        switch (p.color){
+          case PieceColorEnum.NONE:
+            ++count;
+            break;
+          case PieceColorEnum.YELLOW:
+            if(count != 0) line += `${count}`;
+            line += p.king ? "Y" : "y";
+            count = 0;
+            break;
+          case PieceColorEnum.BLACK:
+            if(count != 0) line += `${count}`;
+            line += p.king ? "B" : "b";
+            count = 0;
+            break;
+        }
       }
-      if(count != 0) line += `${count}`;
+      if(count !== 0) line += `${count}`;
       fen += (line + "/");
       line = "";
     }
@@ -493,55 +487,51 @@ export class GameService {
 
     if(endgame){
       // calculate the sum of the distances of every piece to the other pieces of opposite color
-      for(const row of board){
-      for(const p of row){
-        if(p.color === color){
+      for (const row of board) {
+        for (const p of row) {
+          if (p.color === color) {
           let sum: number = 0;
-            for(const row2 of board){
-              for(const p2 of row2){
-                if(p2.color == p.otherColor()){
+            for (const row2 of board) {
+              for (const p2 of row2) {
+                if (p2.color == p.otherColor()) {
                     sum += Math.abs(p.position.x - p2.position.x) + Math.abs(p.position.y - p2.position.y);
                     sum += Math.max(Math.abs(p.position.x - p2.position.x), Math.abs(p.position.y - p2.position.y));
                     // calculating the distance using the pythagorean theorem
                     sum += Math.sqrt(Math.pow(p.position.x - p2.position.x, 2) + Math.pow(p.position.y - p2.position.y, 2));
                   }
                 }
-              }
-
+            }
             total += sum;
           }
         }
       }
 
-      if(color === PieceColorEnum.BLACK) // minimize the distance if have more shaikhs
+      if(color === PieceColorEnum.BLACK)
         return this._numShaikhBlack >= this._numShaikhYellow ? -total : total;
-      else // if(color == Piece::Color::Yellow)
+      else
         return this._numShaikhYellow >= this._numShaikhBlack ? -total : total;
-    }
-    else{
-      const KING_VALUE = 100;
-      const PAWN_ADVANCED_VALUE = 70;
-      const PAWN_VALUE = 50;
+    } else {
+      const KING_VALUE: number = 100;
+      const PAWN_ADVANCED_VALUE: number = 70;
+      const PAWN_VALUE: number = 50;
 
       const respectivePawnBias = color === PieceColorEnum.BLACK ? // avoiding double check
         (p: Piece) => gameConfig.boardHeight - p.position.y +1 : (p: Piece) => p.position.y +1;
 
-
       const respectiveUpperHalf = color === PieceColorEnum.BLACK ? // avoiding double check
         (p: Piece) => p.position.y < 4 : (p: Piece) => p.position.y > 3;
 
+      const respective_shaikh_bias: number = gameConfig.boardHeight + 2; // not a function since it doesn't depend on the piece
 
-    const respective_shaikh_bias: number = gameConfig.boardHeight + 2; // not a function since it doesn't depend on the piece
-
-    for(const row of board){
-      for(const p of row){
-        if(p.color === color){
-          if(p.king) total += (KING_VALUE + respective_shaikh_bias);
-          else if(respectiveUpperHalf(p)) total += (PAWN_ADVANCED_VALUE + respectivePawnBias(p));
-          else total += PAWN_VALUE + respectivePawnBias(p);
+      for (const row of board) {
+        for (const p of row) {
+          if (p.color === color)  {
+            if (p.king) total += (KING_VALUE + respective_shaikh_bias);
+            else if (respectiveUpperHalf(p)) total += (PAWN_ADVANCED_VALUE + respectivePawnBias(p));
+            else total += PAWN_VALUE + respectivePawnBias(p);
+          }
         }
       }
-    }
     }
 
     return total;
@@ -550,7 +540,7 @@ export class GameService {
 
 
   private _evaluate(board: Board): number {
-    const endgame: boolean = this._numBlack == this._numShaikhBlack && this._numYellow == this._numShaikhYellow;
+    const endgame: boolean = this._numBlack === this._numShaikhBlack && this._numYellow == this._numShaikhYellow;
     const blackMaterial: number = this._countMaterial(PieceColorEnum.BLACK, board, endgame);
     const yellowMaterial: number = this._countMaterial(PieceColorEnum.YELLOW, board, endgame);
     const perspective: number = this._turn === PieceColorEnum.BLACK ? 1 : -1;
@@ -562,19 +552,14 @@ export class GameService {
 
 
   public makeMove(move: Move, old_board: Board): {promotion: boolean, new_board: Board } {
-    // make the move and return the eaten pieces
-    // std::vector<Piece> eaten;
     let promotion: boolean = false;
     const board = JSON.parse(JSON.stringify(old_board));
-
-    const pos = move.positions[0];
-
+    const pos: PiecePosition = move.positions[0];
     const p: Piece = new Piece(board[pos.y][pos.x].position, board[pos.y][pos.x].color, board[pos.y][pos.x].king);
 
     board[pos.y][pos.x].color = PieceColorEnum.NONE;
-    // board[pos.y][pos.x].position = new PiecePosition(-1, -1);
 
-    for(const pi of move.eaten){
+    for(const pi of move.eaten) {
       if(pi.color === PieceColorEnum.BLACK){
         if(pi.king) --this._numShaikhBlack;
         --this._numBlack;
@@ -586,13 +571,12 @@ export class GameService {
 
       board[pi.position.y][pi.position.x].color = PieceColorEnum.NONE;
       board[pi.position.y][pi.position.x].king = false;
-      // board[p.position.y][p.position.x].position = new PiecePosition(-1, -1);
     }
 
     p.position = move.positions[move.positions.length -1];
 
     // promotion
-    if(!p.king && (p.position.y === 0 || p.position.y === 7)){ // might need to check color too
+    if(!p.king && (p.position.y === 0 || p.position.y === 7)) {
       promotion = true;
       p.king = true;
       if(p.color == PieceColorEnum.BLACK) ++this._numShaikhBlack;
@@ -608,52 +592,39 @@ export class GameService {
 
 
   public unmakeMove(move: Move, promotion: boolean, board: Board): void {
-    const pos = move.positions[move.positions.length -1];
+    const pos: PiecePosition = move.positions[move.positions.length -1];
     const p: Piece = new Piece(board[pos.y][pos.x].position, board[pos.y][pos.x].color, board[pos.y][pos.x].king);
-    // board[pos.y][pos.x].color = PieceColorEnum.NONE;
-    // // board[pos.y][pos.x].position = new PiecePosition(-1, -1);
 
     for(const e of move.eaten){
-      // board[e.position.y][e.position.x] = e;
       if(e.color === PieceColorEnum.BLACK){
         if(e.king) ++this._numShaikhBlack;
         ++this._numBlack;
       }
-      else /*if e.color == Yellow*/{
-          if(e.king) ++this._numShaikhYellow;
+      else {
+        if(e.king) ++this._numShaikhYellow;
         ++this._numYellow;
       }
     }
 
-    if(promotion){
-      // p.king = false;
+    if (promotion) {
       if(p.color == PieceColorEnum.BLACK) --this._numShaikhBlack;
       else --this._numShaikhYellow;
     }
-    // p.position = move.positions[0];
-    // board[p.position.y][p.position.x] = p;
 
     this._turn = this._turn === PieceColorEnum.BLACK ? PieceColorEnum.YELLOW : PieceColorEnum.BLACK;
   }
 
 
 
-public alphaBeta(depth: number = 10, board: Board, height: number = 0, alpha: number = -1000000, beta: number = 1000000){
-    const hash = this._hasher.hash(board);
+  public alphaBeta(depth: number = 10, board: Board, height: number = 0, alpha: number = -1000000, beta: number = 1000000): number {
+    if(depth === 0) return this._evaluate(board);
 
-    // if(height === 0 && this._cacheHash.contains(hash)){
-    //   const c = this._cacheHash.get(hash);
-    //   return c.turn === this._turn ? c.score : -c.score;
-    // }
-
-    if(depth == 0) return this._evaluate(board);
-
+    const hash: bigint = this._hasher.hash(board);
     const moves: Move[] = this._generatePossibleMoves(board);
 
     if(moves.length === 0) return -1000000;
-    // if(moves.size() == 1) return evaluate(); // bad idea
 
-    for(const m of moves){
+    for (const m of moves) {
       const {promotion, new_board} = this.makeMove(m, board);
       const score: number = -this.alphaBeta(depth -1, new_board, height +1, -beta, -alpha);
       this.unmakeMove(m, promotion, new_board);
@@ -666,6 +637,5 @@ public alphaBeta(depth: number = 10, board: Board, height: number = 0, alpha: nu
 
     return alpha;
   }
-
 
 }

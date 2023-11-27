@@ -1,5 +1,4 @@
-import { Piece } from "./Piece";
-import {PieceColorEnum} from "../enum/PieceColorEnum";
+import { PieceColorEnum } from "../enum/PieceColorEnum";
 
 class FixedSizeCache {
   private table: Map<bigint, Hashed> = new Map();

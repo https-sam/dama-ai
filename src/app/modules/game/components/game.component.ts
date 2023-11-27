@@ -78,7 +78,7 @@ export class GameComponent implements OnInit, OnDestroy {
           this._parseFEN(gameConfig.initialPiecesPositionsFEN);
         } else {
           // AI turn:
-          const moves = this._gameService.possible_moves;
+          const moves = this._gameService.possibleMoves;
           let best: number = -1000000;
           let bestMove: Move = moves[0];
 
