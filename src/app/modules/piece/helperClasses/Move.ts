@@ -13,7 +13,4 @@ export class Move {
     this.eat = eats;
   }
 
-
 }
-
-

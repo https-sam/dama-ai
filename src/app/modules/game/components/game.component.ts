@@ -23,7 +23,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   constructor(
     private _gameService: GameService
-  ) { }
+  ) {}
 
 
   get board(): Observable<Board> {
@@ -56,7 +56,6 @@ export class GameComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Assign a new set to trigger change detection
     this.possiblePositions = newPositions;
   }
 
@@ -78,22 +77,22 @@ export class GameComponent implements OnInit, OnDestroy {
           this._parseFEN(gameConfig.initialPiecesPositionsFEN);
         } else {
           // AI turn:
-          const moves = this._gameService.possibleMoves;
+          const moves: Move[] = this._gameService.possibleMoves;
           let best: number = -1000000;
           let bestMove: Move = moves[0];
 
-
-          if(moves.length > 1)
-            for(const m of moves){
-              const {promotion, new_board} = this._gameService.makeMove(m, this._gameService.getBoard());
+          if (moves.length > 1) {
+            for (const m of moves) {
+              const { promotion, new_board } = this._gameService.makeMove(m, this._gameService.getBoard());
               const score: number = this._gameService.alphaBeta(4, new_board);
               this._gameService.unmakeMove(m, promotion, new_board);
 
-              if(score >= best) { // using >= instead of > to avoid the first move being the same every time
+              if (score >= best) {
                 best = score;
                 bestMove = m;
               }
             }
+          }
 
           this._gameService.play(bestMove);
           this.possiblePositions.clear();
@@ -105,7 +104,6 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
 
-
   private _parseFEN(fen: string): void {
     const board: Piece[][] = Array.from({ length: 8 }, () =>
       Array(8).fill(new Piece(new PiecePosition(0, 0), PieceColorEnum.NONE, false))
@@ -114,10 +112,10 @@ export class GameComponent implements OnInit, OnDestroy {
     let x: number = 0;
     let y: number = 0;
 
-    let numYellow = 0;
-    let numBlack = 0;
-    let numYellowKing = 0;
-    let numBlackKing = 0;
+    let numYellow: number = 0;
+    let numBlack: number = 0;
+    let numYellowKing: number = 0;
+    let numBlackKing: number = 0;
 
     for (const c of fen) {
       switch (c) {
@@ -162,6 +160,4 @@ export class GameComponent implements OnInit, OnDestroy {
     this._gameService.updateBoard(board);
   }
 
-
 }
-

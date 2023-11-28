@@ -5,6 +5,8 @@
       'none': color === PieceColorEnum.NONE,
       'king': king
       }">
-  <ng-content></ng-content>
-  <span *ngIf="king">K</span>
+  <span *ngIf="king">
+    <img *ngIf="color === PieceColorEnum.BLACK" class="king-icon" src="assets/images/crown-white.svg" alt="Crown icon">
+    <img *ngIf="color === PieceColorEnum.YELLOW" class="king-icon" src="assets/images/crown-black.svg" alt="Crown icon">
+  </span>
 </div>
