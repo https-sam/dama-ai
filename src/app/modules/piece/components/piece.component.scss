@@ -22,16 +22,13 @@
     background-color: rgba(0, 0, 0, 0.7);
   }
 
-
-  &.king {
-    //TODO: Add a crown instead
-    font-size: 24px;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  &.none {
+    display: none;
   }
 }
 
-
-.none {
-  display: none;
+.king-icon {
+  margin-top: .2rem;
 }
+
+

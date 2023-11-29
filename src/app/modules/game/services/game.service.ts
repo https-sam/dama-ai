@@ -101,11 +101,10 @@ export class GameService {
     board[move.positions[0].y][move.positions[0].x].position = new PiecePosition(-1, -1);
 
     for (const pi of move.eaten) {
-      if(pi.color === PieceColorEnum.BLACK){
+      if (pi.color === PieceColorEnum.BLACK) {
         if(pi.king) --this._numShaikhBlack;
         --this._numBlack;
-      }
-      else{
+      } else {
         if(pi.king) --this._numShaikhYellow;
         --this._numYellow;
       }
@@ -175,9 +174,9 @@ export class GameService {
   private _generatePossibleMoves(board: Board): Move[] {
     let moves: Move[] = [];
 
-    for(const row of this._board.value){
-      for(const p of row) {
-        if(p.color === this._turn){
+    for (const row of this._board.value) {
+      for (const p of row) {
+        if (p.color === this._turn) {
             const moves2: Move[] = p.king ? this._generatePossibleKingMoves(p, board) : this._generatePossiblePawnMoves(p, board);
             moves.push(...moves2);
         }
@@ -186,7 +185,7 @@ export class GameService {
 
     const eating: boolean = moves.some((m: Move) => m.eat );
 
-    if(eating){
+    if (eating) {
       const max: number = moves.reduce(
         (acc: number, elt: Move): number => (elt && elt.positions.length > acc ? elt.positions.length : acc), 0);
 
@@ -277,7 +276,7 @@ export class GameService {
 
           const eaten: Piece = board[y][x];
 
-          const {new_piece, new_board} = this._makeSingleMove(p, eaten, pos, board);
+          const { new_piece, new_board } = this._makeSingleMove(p, eaten, pos, board);
           const moves2: Move[] = this._generatePossiblePawnMoves(new_piece, new_board, true);
 
           // add the eaten piece to the move
@@ -351,14 +350,13 @@ export class GameService {
           for(const pos of positions){
             const eaten: Piece = board[y][x];
             const move: Move = new Move([p.position, pos], true);
-
-            move.eaten.push(eaten);
-
             const { new_piece, new_board} = this._makeSingleMove(p, eaten, pos, board);
             const moves2: Move[] = this._generatePossibleKingMoves(new_piece, new_board, true);
 
+            move.eaten.push(eaten);
+
             // add the eaten piece to the move
-            for(const m of moves2){
+            for (const m of moves2) {
               const m2: Move = new Move([...move.positions], true);
               m2.eaten.push(...move.eaten);
 
@@ -366,9 +364,7 @@ export class GameService {
                 m2.positions.push(m.positions[i]);
               }
 
-              // m2.eat = true;
               m2.eaten.push(...m.eaten);
-
               moves.push(m2);
             }
 
@@ -391,7 +387,7 @@ export class GameService {
 
     // check if the distance between the two pieces is more than one square
     if ((p2.position.x === p1.position.x && p2.position.y - p1.position.y != result)
-      || (p2.position.y === p1.position.y && Math.abs(p2.position.x - p1.position.x) != 1))
+      || (p2.position.y === p1.position.y && Math.abs(p2.position.x - p1.position.x) !== 1))
       return null;
 
 
@@ -423,8 +419,8 @@ export class GameService {
       return [];
 
     // check if this piece can jump over the other piece even if it is a long jump
-    if(p2.position.x === p1.position.x){
-      if(p2.position.y === 0 || p2.position.y === 7) return [];
+    if (p2.position.x === p1.position.x) {
+      if (p2.position.y === 0 || p2.position.y === 7) return [];
 
       const dist: number = Math.abs(p2.position.y - p1.position.y);
       const dir: number = p2.position.y - p1.position.y > 0 ? 1 : -1;
@@ -506,7 +502,7 @@ export class GameService {
         }
       }
 
-      if(color === PieceColorEnum.BLACK)
+      if (color === PieceColorEnum.BLACK)
         return this._numShaikhBlack >= this._numShaikhYellow ? -total : total;
       else
         return this._numShaikhYellow >= this._numShaikhBlack ? -total : total;
@@ -551,7 +547,7 @@ export class GameService {
   }
 
 
-  public makeMove(move: Move, old_board: Board): {promotion: boolean, new_board: Board } {
+  public makeMove(move: Move, old_board: Board): { promotion: boolean, new_board: Board } {
     let promotion: boolean = false;
     const board = JSON.parse(JSON.stringify(old_board));
     const pos: PiecePosition = move.positions[0];
@@ -560,12 +556,11 @@ export class GameService {
     board[pos.y][pos.x].color = PieceColorEnum.NONE;
 
     for(const pi of move.eaten) {
-      if(pi.color === PieceColorEnum.BLACK){
-        if(pi.king) --this._numShaikhBlack;
+      if (pi.color === PieceColorEnum.BLACK){
+        if (pi.king) --this._numShaikhBlack;
         --this._numBlack;
-      }
-      else{
-        if(pi.king) --this._numShaikhYellow;
+      } else {
+        if (pi.king) --this._numShaikhYellow;
         --this._numYellow;
       }
 
@@ -579,7 +574,7 @@ export class GameService {
     if(!p.king && (p.position.y === 0 || p.position.y === 7)) {
       promotion = true;
       p.king = true;
-      if(p.color == PieceColorEnum.BLACK) ++this._numShaikhBlack;
+      if(p.color === PieceColorEnum.BLACK) ++this._numShaikhBlack;
       else ++this._numShaikhYellow;
     }
 
@@ -595,19 +590,18 @@ export class GameService {
     const pos: PiecePosition = move.positions[move.positions.length -1];
     const p: Piece = new Piece(board[pos.y][pos.x].position, board[pos.y][pos.x].color, board[pos.y][pos.x].king);
 
-    for(const e of move.eaten){
-      if(e.color === PieceColorEnum.BLACK){
+    for (const e of move.eaten) {
+      if (e.color === PieceColorEnum.BLACK) {
         if(e.king) ++this._numShaikhBlack;
         ++this._numBlack;
-      }
-      else {
-        if(e.king) ++this._numShaikhYellow;
+      } else {
+        if (e.king) ++this._numShaikhYellow;
         ++this._numYellow;
       }
     }
 
     if (promotion) {
-      if(p.color == PieceColorEnum.BLACK) --this._numShaikhBlack;
+      if(p.color === PieceColorEnum.BLACK) --this._numShaikhBlack;
       else --this._numShaikhYellow;
     }
 
@@ -615,17 +609,16 @@ export class GameService {
   }
 
 
-
   public alphaBeta(depth: number = 10, board: Board, height: number = 0, alpha: number = -1000000, beta: number = 1000000): number {
-    if(depth === 0) return this._evaluate(board);
+    if (depth === 0) return this._evaluate(board);
 
     const hash: bigint = this._hasher.hash(board);
     const moves: Move[] = this._generatePossibleMoves(board);
 
-    if(moves.length === 0) return -1000000;
+    if (moves.length === 0) return -1000000;
 
     for (const m of moves) {
-      const {promotion, new_board} = this.makeMove(m, board);
+      const { promotion, new_board} = this.makeMove(m, board);
       const score: number = -this.alphaBeta(depth -1, new_board, height +1, -beta, -alpha);
       this.unmakeMove(m, promotion, new_board);
 
