@@ -1,12 +1,12 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Piece} from '../../piece/helperClasses/Piece';
-import {PiecePosition} from '../../piece/helperClasses/PiecePosition';
-import {PieceColorEnum} from '../../piece/enum/PieceColorEnum';
-import {GameService} from '../services/game.service';
-import {Observable, Subscription} from 'rxjs';
-import {Move} from '../../piece/helperClasses/Move';
-import {Board} from '../types/board';
-import {gameConfig} from "../game-config";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Piece } from '../../piece/helperClasses/Piece';
+import { PiecePosition } from '../../piece/helperClasses/PiecePosition';
+import { PieceColorEnum } from '../../piece/enum/PieceColorEnum';
+import { GameService } from '../services/game.service';
+import { Observable, Subscription } from 'rxjs';
+import { Move } from '../../piece/helperClasses/Move';
+import { Board } from '../types/board';
+import { gameConfig } from "../game-config";
 
 
 @Component({
